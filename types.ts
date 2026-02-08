@@ -52,7 +52,7 @@ export interface Project {
   emoji: string;
   background: string;
   category: ProjectCategory;
-  members: string[]; 
+  members: string[];
   isFavorite: boolean;
   status: ProjectStatus;
   createdAt: string;
@@ -85,5 +85,55 @@ export interface ProjectDoc {
   files: { name: string; url: string }[];
 }
 
-export type ViewType = 'Board' | 'List' | 'Calendar';
+export interface FinanceData {
+  id: string;
+  projectId: string;
+  saleValue: number;
+  membersCosts: {
+    role: string;
+    name: string;
+    cost: number;
+  }[];
+  contractDuration: 6 | 12 | 24;
+}
+
+export interface TrafficMetric {
+  id: string;
+  projectId: string;
+  month: string;
+  investment: number;
+  reach: number;
+  impressions: number;
+  clicks: number;
+  sales: number;
+  revenue: number;
+}
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  completed: boolean;
+  dueDate: string;
+}
+
+export interface OnboardingWorkflow {
+  id: string;
+  projectId: string;
+  serviceType: 'Gestão de Mídias' | 'Cronograma de Stories' | 'Identidade Visual';
+  startDate: string;
+  steps: OnboardingStep[];
+}
+
+export interface TrafficForecast {
+  investment: number;
+  ticketPrice: number;
+  scenarios: {
+    optimistic: { sales: number; roi: number; cpa: number };
+    median: { sales: number; roi: number; cpa: number };
+    pessimistic: { sales: number; roi: number; cpa: number };
+  };
+}
+
+export type ViewType = 'Board' | 'List' | 'Calendar' | 'Finance' | 'Traffic' | 'Onboarding';
 export type AppView = 'Gallery' | 'Workspace';
+
