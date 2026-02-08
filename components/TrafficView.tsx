@@ -1,8 +1,38 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const TrafficView: React.FC<{ projectId: string }> = ({ projectId }) => {
     const [investment, setInvestment] = useState(5000);
     const [ticketPrice, setTicketPrice] = useState(1500);
+
+    useEffect(() => {
+        const fetchTraffic = async () => {
+            const { data: tData } = await supabase
+                .from('traffic_metrics')
+                .select('*')
+                .eq('project_id', projectId)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (tData) {
+                setInvestment(Number(tData.investment));
+                setTicketPrice(Number(tData.revenue / (tData.sales || 1)) || 1500);
+            }
+        };
+        fetchTraffic();
+    }, [projectId]);
+
+    const updateTraffic = async (newInv: number, newTicket: number) => {
+        setInvestment(newInv);
+        setTicketPrice(newTicket);
+        await supabase.from('traffic_metrics').upsert({
+            project_id: projectId,
+            month: new Date().toLocaleString('pt-BR', { month: 'long' }),
+            investment: newInv,
+            revenue: newTicket // Simplificação: usando revenue para guardar o ticket no mock
+        }, { onConflict: 'project_id' });
+    };
 
     const scenarios = useMemo(() => {
         // Fórmulas baseadas em referências de mercado
@@ -21,6 +51,7 @@ const TrafficView: React.FC<{ projectId: string }> = ({ projectId }) => {
         };
     }, [investment, ticketPrice]);
 
+
     return (
         <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Search/Filter Bar Simulation */}
@@ -32,7 +63,7 @@ const TrafficView: React.FC<{ projectId: string }> = ({ projectId }) => {
                         <input
                             type="number"
                             value={investment}
-                            onChange={(e) => setInvestment(Number(e.target.value))}
+                            onChange={(e) => updateTraffic(Number(e.target.value), ticketPrice)}
                             className="w-32 bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-2 font-black text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>
@@ -44,7 +75,7 @@ const TrafficView: React.FC<{ projectId: string }> = ({ projectId }) => {
                         <input
                             type="number"
                             value={ticketPrice}
-                            onChange={(e) => setTicketPrice(Number(e.target.value))}
+                            onChange={(e) => updateTraffic(investment, Number(e.target.value))}
                             className="w-32 bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-2 font-black text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                         />
                     </div>

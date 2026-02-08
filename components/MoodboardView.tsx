@@ -1,24 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { MoodboardItem } from '../types';
 
 const MoodboardView: React.FC<{ projectId: string }> = ({ projectId }) => {
-    const [items, setItems] = useState([
-        { id: '1', url: 'https://images.unsplash.com/photo-1557683316-973673baf926', type: 'image', title: 'Gradientes Modernos' },
-        { id: '2', url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab', type: 'image', title: 'Abstrato Tech' },
-        { id: '3', url: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d', type: 'image', title: 'Tipografia Hero' },
-    ]);
+    const [items, setItems] = useState<MoodboardItem[]>([]);
     const [newItemUrl, setNewItemUrl] = useState('');
 
-    const addItem = () => {
+    useEffect(() => {
+        const fetchMoodboard = async () => {
+            const { data } = await supabase
+                .from('moodboard')
+                .select('*')
+                .eq('project_id', projectId)
+                .order('created_at', { ascending: false });
+
+            if (data) {
+                setItems(data.map(item => ({
+                    id: item.id,
+                    projectId: item.project_id,
+                    url: item.url,
+                    type: item.type as 'image' | 'link',
+                    title: item.title,
+                    createdAt: item.created_at
+                })));
+            }
+        };
+        fetchMoodboard();
+    }, [projectId]);
+
+    const addItem = async () => {
         if (!newItemUrl) return;
-        const isImage = newItemUrl.match(/\.(jpeg|jpg|gif|png)$/) != null || newItemUrl.includes('unsplash');
-        setItems([{
-            id: Math.random().toString(36).substr(2, 9),
+        const isImage = newItemUrl.match(/\.(jpeg|jpg|gif|png)$/) != null || newItemUrl.includes('unsplash') || newItemUrl.includes('images.pexels.com');
+        const type = isImage ? 'image' : 'link';
+        const title = 'Nova Referência';
+
+        const { data: insertedItem } = await supabase.from('moodboard').insert([{
+            project_id: projectId,
             url: newItemUrl,
-            type: isImage ? 'image' : 'link',
-            title: 'Nova Referência'
-        }, ...items]);
+            type: type,
+            title: title
+        }]).select().single();
+
+        if (insertedItem) {
+            setItems([{
+                id: insertedItem.id,
+                projectId: insertedItem.project_id,
+                url: insertedItem.url,
+                type: insertedItem.type as 'image' | 'link',
+                title: insertedItem.title,
+                createdAt: insertedItem.created_at
+            }, ...items]);
+        }
         setNewItemUrl('');
     };
+
+    const deleteItem = async (id: string) => {
+        setItems(prev => prev.filter(i => i.id !== id));
+        await supabase.from('moodboard').delete().eq('id', id);
+    };
+
 
     return (
         <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -62,7 +102,10 @@ const MoodboardView: React.FC<{ projectId: string }> = ({ projectId }) => {
                                 <p className="text-white text-sm font-black uppercase tracking-widest mb-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{item.title}</p>
                                 <div className="flex gap-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
                                     <a href={item.url} target="_blank" rel="noreferrer" className="flex-1 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white text-[10px] font-black uppercase py-2 rounded-xl text-center">Abrir</a>
-                                    <button className="p-2 bg-rose-500/20 backdrop-blur-md hover:bg-rose-500 text-white rounded-xl">
+                                    <button
+                                        onClick={() => deleteItem(item.id)}
+                                        className="p-2 bg-rose-500/20 backdrop-blur-md hover:bg-rose-500 text-white rounded-xl"
+                                    >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </div>

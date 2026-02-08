@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FinanceData } from '../types';
+import { supabase } from '../lib/supabase';
 
 interface FinanceViewProps {
     projectId: string;
@@ -7,7 +8,7 @@ interface FinanceViewProps {
 
 const FinanceView: React.FC<FinanceViewProps> = ({ projectId }) => {
     const [data, setData] = useState<FinanceData>({
-        id: 'f1',
+        id: '',
         projectId,
         saleValue: 10000,
         contractDuration: 12,
@@ -18,10 +19,42 @@ const FinanceView: React.FC<FinanceViewProps> = ({ projectId }) => {
         ]
     });
 
+    useEffect(() => {
+        const fetchFinance = async () => {
+            const { data: fData } = await supabase
+                .from('finance_data')
+                .select('*')
+                .eq('project_id', projectId)
+                .single();
+
+            if (fData) {
+                setData({
+                    id: fData.id,
+                    projectId: fData.project_id,
+                    saleValue: fData.sale_value,
+                    contractDuration: fData.contract_duration,
+                    membersCosts: fData.members_costs || []
+                });
+            }
+        };
+        fetchFinance();
+    }, [projectId]);
+
+    const updateFinance = async (newData: FinanceData) => {
+        setData(newData);
+        await supabase.from('finance_data').upsert({
+            project_id: projectId,
+            sale_value: newData.saleValue,
+            contract_duration: newData.contractDuration,
+            members_costs: newData.membersCosts
+        }, { onConflict: 'project_id' });
+    };
+
     const totalCosts = useMemo(() => data.membersCosts.reduce((acc, current) => acc + current.cost, 0), [data.membersCosts]);
     const profit = data.saleValue - totalCosts;
     const margin = (profit / data.saleValue) * 100;
     const costPercentage = (totalCosts / data.saleValue) * 100;
+
 
     return (
         <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -82,7 +115,7 @@ const FinanceView: React.FC<FinanceViewProps> = ({ projectId }) => {
                         {[6, 12, 24].map(duration => (
                             <button
                                 key={duration}
-                                onClick={() => setData({ ...data, contractDuration: duration as any })}
+                                onClick={() => updateFinance({ ...data, contractDuration: duration as any })}
                                 className={`p-4 rounded-2xl border-2 transition-all ${data.contractDuration === duration ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' : 'border-slate-100 dark:border-slate-800 text-slate-400'}`}
                             >
                                 <div className="text-xl font-black">{duration}</div>

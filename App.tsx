@@ -38,11 +38,43 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: projectsData } = await supabase.from('projects').select('*');
-      if (projectsData) setProjects(projectsData);
+      const { data: projectsData, error: pError } = await supabase.from('projects').select('*');
+      if (projectsData) {
+        const mappedProjects = projectsData.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          emoji: p.emoji,
+          background: p.background,
+          category: p.category,
+          members: p.members,
+          isFavorite: p.is_favorite,
+          status: p.status,
+          createdAt: p.created_at,
+          driveUrl: p.drive_url
+        }));
+        setProjects(mappedProjects);
+      }
 
-      const { data: tasksData } = await supabase.from('tasks').select('*');
-      if (tasksData) setTasks(tasksData);
+      const { data: tasksData, error: tError } = await supabase.from('tasks').select('*');
+      if (tasksData) {
+        const mappedTasks = tasksData.map(t => ({
+          id: t.id,
+          projectId: t.project_id,
+          title: t.title,
+          completed: t.completed,
+          priority: t.priority,
+          dueDate: t.due_date,
+          assignee: t.assignee,
+          columnId: t.column_id,
+          description: t.description,
+          cost: t.cost,
+          isTemplate: t.is_template,
+          checklist: t.checklist || [],
+          comments: t.comments || []
+        }));
+        setTasks(mappedTasks);
+      }
     };
 
     fetchData();
@@ -76,13 +108,24 @@ const App: React.FC = () => {
     return list;
   }, [tasks, filter, activeProjectId]);
 
-  const toggleTask = useCallback((id: string) => {
-    setTasks((prev) => prev.map((t) =>
-      t.id === id ? { ...t, completed: !t.completed, columnId: !t.completed ? 'done' : t.columnId } : t
-    ));
-  }, []);
+  const toggleTask = useCallback(async (id: string) => {
+    const taskToToggle = tasks.find(t => t.id === id);
+    if (!taskToToggle) return;
 
-  const addTask = useCallback((columnId: string, title: string) => {
+    const newCompleted = !taskToToggle.completed;
+    const newColumnId = newCompleted ? 'done' : taskToToggle.columnId;
+
+    setTasks((prev) => prev.map((t) =>
+      t.id === id ? { ...t, completed: newCompleted, columnId: newColumnId } : t
+    ));
+
+    await supabase.from('tasks').update({
+      completed: newCompleted,
+      column_id: newColumnId
+    }).eq('id', id);
+  }, [tasks]);
+
+  const addTask = useCallback(async (columnId: string, title: string) => {
     if (!activeProjectId) return;
     const newTask: Task = {
       id: Math.random().toString(36).substr(2, 9),
@@ -95,15 +138,31 @@ const App: React.FC = () => {
       comments: []
     };
     setTasks((prev) => [...prev, newTask]);
+
+    await supabase.from('tasks').insert([{
+      id: newTask.id,
+      project_id: newTask.projectId,
+      title: newTask.title,
+      completed: newTask.completed,
+      priority: newTask.priority,
+      column_id: newTask.columnId,
+      checklist: newTask.checklist,
+      comments: newTask.comments
+    }]);
   }, [activeProjectId]);
 
-  const handleMoveTask = useCallback((tid: string, cid: string) => {
+  const handleMoveTask = useCallback(async (tid: string, cid: string) => {
     setTasks((prev) => prev.map((t) =>
       t.id === tid ? { ...t, columnId: cid, completed: cid === 'done' } : t
     ));
+
+    await supabase.from('tasks').update({
+      column_id: cid,
+      completed: cid === 'done'
+    }).eq('id', tid);
   }, []);
 
-  const createProject = useCallback((data: Partial<Project>) => {
+  const createProject = useCallback(async (data: Partial<Project>) => {
     const newProj: Project = {
       id: Math.random().toString(36).substr(2, 9),
       name: data.name || 'Novo Projeto',
@@ -114,15 +173,30 @@ const App: React.FC = () => {
       members: ['m1'],
       isFavorite: false,
       status: 'Ativo',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      driveUrl: data.driveUrl
     };
     setProjects((prev) => [...prev, newProj]);
     setAppView('Workspace');
     setActiveProjectId(newProj.id);
     setIsCreateModalOpen(false);
+
+    await supabase.from('projects').insert([{
+      id: newProj.id,
+      name: newProj.name,
+      description: newProj.description,
+      emoji: newProj.emoji,
+      background: newProj.background,
+      category: newProj.category,
+      members: newProj.members,
+      is_favorite: newProj.isFavorite,
+      status: newProj.status,
+      created_at: newProj.createdAt,
+      drive_url: newProj.driveUrl
+    }]);
   }, []);
 
-  const updateTask = useCallback((updatedTask: Task) => {
+  const updateTask = useCallback(async (updatedTask: Task) => {
     setTasks((prev) => {
       const exists = prev.find((t) => t.id === updatedTask.id);
       if (exists) {
@@ -130,15 +204,40 @@ const App: React.FC = () => {
       }
       return [...prev, updatedTask];
     });
+
+    await supabase.from('tasks').upsert({
+      id: updatedTask.id,
+      project_id: updatedTask.projectId,
+      title: updatedTask.title,
+      completed: updatedTask.completed,
+      priority: updatedTask.priority,
+      due_date: updatedTask.dueDate,
+      assignee: updatedTask.assignee,
+      column_id: updatedTask.columnId,
+      description: updatedTask.description,
+      cost: updatedTask.cost,
+      is_template: updatedTask.isTemplate,
+      checklist: updatedTask.checklist,
+      comments: updatedTask.comments
+    });
   }, []);
 
-  const deleteTask = useCallback((id: string) => {
+  const deleteTask = useCallback(async (id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     setSelectedTask(null);
+
+    await supabase.from('tasks').delete().eq('id', id);
   }, []);
 
-  const handleToggleFavorite = useCallback((id: string) => {
-    setProjects((prev) => prev.map((p) => p.id === id ? { ...p, isFavorite: !p.isFavorite } : p));
+  const handleToggleFavorite = useCallback(async (id: string) => {
+    setProjects((prev) => prev.map((p) => {
+      if (p.id === id) {
+        const newVal = !p.isFavorite;
+        supabase.from('projects').update({ is_favorite: newVal }).eq('id', id);
+        return { ...p, isFavorite: newVal };
+      }
+      return p;
+    }));
   }, []);
 
   const handleDocUpdate = useCallback((newDoc: ProjectDoc) => {
