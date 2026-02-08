@@ -14,6 +14,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
   const [emoji, setEmoji] = useState('📁');
   const [bg, setBg] = useState(BACKGROUND_OPTIONS[0].val);
   const [category, setCategory] = useState<ProjectCategory>(PROJECT_CATEGORIES[0]);
+  const [driveUrl, setDriveUrl] = useState('');
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
@@ -22,12 +23,12 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
           <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Novo Workspace</h2>
           <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Personalize seu ambiente de trabalho</p>
         </div>
-        
+
         <div className="p-8 space-y-6 overflow-y-auto max-h-[60vh] scrollbar-hide">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-1 md:col-span-2">
               <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Nome do Projeto</label>
-              <input 
+              <input
                 autoFocus
                 className="w-full text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl p-3 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all"
                 placeholder="Ex: Marketing Digital"
@@ -37,7 +38,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
             </div>
             <div>
               <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Categoria</label>
-              <select 
+              <select
                 className="w-full text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl p-3 focus:border-blue-400 dark:focus:border-blue-500 outline-none"
                 value={category}
                 onChange={e => setCategory(e.target.value as ProjectCategory)}
@@ -48,7 +49,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
             <div>
               <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Emoji do Ícone</label>
               <div className="flex gap-2">
-                <select 
+                <select
                   className="flex-1 text-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl p-2.5 outline-none focus:border-blue-400 dark:focus:border-blue-500"
                   value={emoji}
                   onChange={e => setEmoji(e.target.value)}
@@ -61,11 +62,21 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
 
           <div>
             <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Descrição Curta</label>
-            <textarea 
+            <textarea
               className="w-full text-sm font-medium border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl p-3 focus:border-blue-400 dark:focus:border-blue-500 outline-none h-20 resize-none transition-all"
               placeholder="Qual o foco principal deste workspace?"
               value={desc}
               onChange={e => setDesc(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Google Drive do Cliente (URL)</label>
+            <input
+              className="w-full text-sm font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl p-3 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all"
+              placeholder="https://drive.google.com/..."
+              value={driveUrl}
+              onChange={e => setDriveUrl(e.target.value)}
             />
           </div>
 
@@ -86,7 +97,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
                   )}
                   {bg === opt.val && (
                     <div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                     </div>
                   )}
                 </button>
@@ -97,9 +108,9 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onCrea
 
         <div className="p-8 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 transition-colors">
           <button onClick={onClose} className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-6 py-2 transition-colors">Cancelar</button>
-          <button 
+          <button
             disabled={!name.trim()}
-            onClick={() => onCreate({ name, description: desc, emoji, background: bg, category })}
+            onClick={() => onCreate({ name, description: desc, emoji, background: bg, category, driveUrl })}
             className="bg-blue-600 text-white text-xs font-black uppercase px-8 py-3 rounded-2xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
           >
             Criar Workspace

@@ -42,14 +42,14 @@ const Header: React.FC<HeaderProps> = ({ currentView, setView, progress, members
             </div>
             <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
             <div className="flex items-center gap-1">
-              {(['Finance', 'Traffic', 'Onboarding'] as const).map(v => (
+              {(['Finance', 'Traffic', 'Onboarding', 'Moodboard'] as const).map(v => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${currentView === v ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                     }`}
                 >
-                  {v === 'Finance' ? 'Precificação' : v === 'Traffic' ? 'Tráfego' : 'Onboarding'}
+                  {v === 'Finance' ? 'Precificação' : v === 'Traffic' ? 'Tráfego' : v === 'Onboarding' ? 'Onboarding' : 'Moodboard'}
                 </button>
               ))}
             </div>

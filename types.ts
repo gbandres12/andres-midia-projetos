@@ -4,6 +4,16 @@ export type ProjectStatus = 'Ativo' | 'Pausado' | 'Concluído';
 export type AssetType = 'image' | 'video' | 'text' | 'social_post';
 export type ProjectCategory = 'Marketing' | 'Design' | 'Desenvolvimento' | 'Planejamento' | 'Operações';
 
+export interface MoodboardItem {
+  id: string;
+  projectId: string;
+  url: string;
+  type: 'image' | 'link';
+  title?: string;
+  createdAt: string;
+}
+
+
 export interface Brand {
   id: string;
   name: string;
@@ -56,6 +66,7 @@ export interface Project {
   isFavorite: boolean;
   status: ProjectStatus;
   createdAt: string;
+  driveUrl?: string; // Repositório Estratégico (Google Drive)
 }
 
 export interface Task {
@@ -134,6 +145,6 @@ export interface TrafficForecast {
   };
 }
 
-export type ViewType = 'Board' | 'List' | 'Calendar' | 'Finance' | 'Traffic' | 'Onboarding';
+export type ViewType = 'Board' | 'List' | 'Calendar' | 'Finance' | 'Traffic' | 'Onboarding' | 'Moodboard';
 export type AppView = 'Gallery' | 'Workspace';
 

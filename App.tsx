@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar';
 import FinanceView from './components/FinanceView';
 import TrafficView from './components/TrafficView';
 import OnboardingView from './components/OnboardingView';
+import MoodboardView from './components/MoodboardView';
 import { supabase } from './lib/supabase';
 
 
@@ -233,6 +234,8 @@ const App: React.FC = () => {
                     <TrafficView projectId={activeProjectId || ''} />
                   ) : view === 'Onboarding' ? (
                     <OnboardingView projectId={activeProjectId || ''} />
+                  ) : view === 'Moodboard' ? (
+                    <MoodboardView projectId={activeProjectId || ''} />
                   ) : null}
                 </div>
               </main>
