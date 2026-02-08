@@ -38,47 +38,54 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: projectsData, error: pError } = await supabase.from('projects').select('*');
-      if (projectsData) {
-        const mappedProjects = projectsData.map(p => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          emoji: p.emoji,
-          background: p.background,
-          category: p.category,
-          members: p.members,
-          isFavorite: p.is_favorite,
-          status: p.status,
-          createdAt: p.created_at,
-          driveUrl: p.drive_url
-        }));
-        setProjects(mappedProjects);
-      }
+      try {
+        const { data: projectsData, error: pError } = await supabase.from('projects').select('*');
+        if (pError) throw pError;
+        if (projectsData) {
+          const mappedProjects = projectsData.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            emoji: p.emoji,
+            background: p.background,
+            category: p.category,
+            members: p.members,
+            isFavorite: p.is_favorite,
+            status: p.status,
+            createdAt: p.created_at,
+            driveUrl: p.drive_url
+          }));
+          setProjects(mappedProjects);
+        }
 
-      const { data: tasksData, error: tError } = await supabase.from('tasks').select('*');
-      if (tasksData) {
-        const mappedTasks = tasksData.map(t => ({
-          id: t.id,
-          projectId: t.project_id,
-          title: t.title,
-          completed: t.completed,
-          priority: t.priority,
-          dueDate: t.due_date,
-          assignee: t.assignee,
-          columnId: t.column_id,
-          description: t.description,
-          cost: t.cost,
-          isTemplate: t.is_template,
-          checklist: t.checklist || [],
-          comments: t.comments || []
-        }));
-        setTasks(mappedTasks);
+        const { data: tasksData, error: tError } = await supabase.from('tasks').select('*');
+        if (tError) throw tError;
+        if (tasksData) {
+          const mappedTasks = tasksData.map(t => ({
+            id: t.id,
+            projectId: t.project_id,
+            title: t.title,
+            completed: t.completed,
+            priority: t.priority,
+            dueDate: t.due_date,
+            assignee: t.assignee,
+            columnId: t.column_id,
+            description: t.description,
+            cost: t.cost,
+            isTemplate: t.is_template,
+            checklist: t.checklist || [],
+            comments: t.comments || []
+          }));
+          setTasks(mappedTasks);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados do Supabase:', error);
       }
     };
 
     fetchData();
   }, []);
+
 
   useEffect(() => {
     localStorage.setItem('zen-theme', darkMode ? 'dark' : 'light');
