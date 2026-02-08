@@ -1,10 +1,18 @@
 
-import { Column, Task, Member, Project, ProjectDoc } from './types';
+import { Column, Task, Member, Project, ProjectDoc, ProjectCategory } from './types';
 
 export const MEMBERS: Member[] = [
   { id: 'm1', name: 'Ana Silva', avatar: 'https://i.pravatar.cc/150?u=ana' },
   { id: 'm2', name: 'Bruno Costa', avatar: 'https://i.pravatar.cc/150?u=bruno' },
   { id: 'm3', name: 'Carla Dias', avatar: 'https://i.pravatar.cc/150?u=carla' },
+];
+
+export const PROJECT_CATEGORIES: ProjectCategory[] = [
+  'Marketing',
+  'Design',
+  'Desenvolvimento',
+  'Planejamento',
+  'Operações'
 ];
 
 export const BACKGROUND_OPTIONS = [
@@ -25,6 +33,7 @@ export const INITIAL_PROJECTS: Project[] = [
     description: 'Campanha de lançamento do novo showroom.',
     emoji: '🚗',
     background: BACKGROUND_OPTIONS[0].val,
+    category: 'Marketing',
     members: ['m1', 'm2'],
     isFavorite: true,
     status: 'Ativo',
@@ -36,6 +45,7 @@ export const INITIAL_PROJECTS: Project[] = [
     description: 'Atualização da interface do portal do aluno.',
     emoji: '🎓',
     background: BACKGROUND_OPTIONS[4].val,
+    category: 'Design',
     members: ['m1', 'm3'],
     isFavorite: false,
     status: 'Ativo',

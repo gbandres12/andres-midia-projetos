@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Task, Column, ViewType, Project, ProjectDoc, AppView } from './types';
+import { Task, Column, ViewType, Project, ProjectDoc, AppView, ProjectCategory } from './types';
 import { INITIAL_COLUMNS, INITIAL_TASKS, MEMBERS, INITIAL_PROJECTS, INITIAL_DOCS } from './constants';
 import Header from './components/Header';
 import BoardView from './components/BoardView';
@@ -90,6 +90,7 @@ const App: React.FC = () => {
       description: data.description || '',
       emoji: data.emoji || '📁',
       background: data.background || 'linear-gradient(to bottom right, #6366f1, #a855f7)',
+      category: (data.category as ProjectCategory) || 'Marketing',
       members: ['m1'],
       isFavorite: false,
       status: 'Ativo',

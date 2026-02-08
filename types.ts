@@ -1,6 +1,29 @@
 
 export type Priority = 'Crítica' | 'Urgente' | 'Média' | 'Baixa' | 'Em Dia';
 export type ProjectStatus = 'Ativo' | 'Pausado' | 'Concluído';
+export type AssetType = 'image' | 'video' | 'text' | 'social_post';
+export type ProjectCategory = 'Marketing' | 'Design' | 'Desenvolvimento' | 'Planejamento' | 'Operações';
+
+export interface Brand {
+  id: string;
+  name: string;
+  description?: string;
+  logoUrl?: string;
+  primaryColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  toneOfVoice?: string;
+}
+
+export interface GeneratedAsset {
+  id: string;
+  brandId: string;
+  assetUrl: string;
+  assetType: AssetType;
+  promptUsed: string;
+  metadata: any;
+  createdAt: string;
+}
 
 export interface ChecklistItem {
   id: string;
@@ -23,11 +46,13 @@ export interface Member {
 
 export interface Project {
   id: string;
+  brandId?: string; // Relacionamento opcional com marca
   name: string;
   description: string;
   emoji: string;
   background: string;
-  members: string[]; // IDs
+  category: ProjectCategory;
+  members: string[]; 
   isFavorite: boolean;
   status: ProjectStatus;
   createdAt: string;
